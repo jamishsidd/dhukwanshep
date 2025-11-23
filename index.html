@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dhukwan SHEP — Single File</title>
+
+  <!-- Tailwind Play CDN for convenience -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Small helpers for cards used in the React app */
+    .card { @apply bg-white rounded-2xl shadow-sm border; }
+    .card-header { @apply p-4 border-b; }
+    .card-content { @apply p-4; }
+    /* Fallback for older Tailwind versions if @apply isn't processed in CDN: keep minimal inline too */
+    .card { background: white; border-radius: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04); }
+    .card-header { padding: 1rem; border-bottom: 1px solid rgba(0,0,0,0.04); }
+    .card-content { padding: 1rem; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 font-sans">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-900 to-cyan-800 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      
+         <img 
+         src="https://www.thdc.co.in/sites/default/files/logo.png" 
+         alt="THDC Logo"
+         class="h-16 w-auto rounded bg-white p-1 shadow"
+         />
+         
+         <div>
+        <h1 class="text-2xl sm:text-3xl tracking-tight">Dhukwan SHEP</h1>
+        <p class="text-sm text-blue-100 mt-1">Tehri Hydro Development Corporation</p>
+        </div>
+
+      <nav id="main-nav" class="hidden lg:flex gap-1"></nav>
+
+      <div class="lg:hidden">
+        <button id="mobile-toggle" class="p-2 rounded-lg hover:bg-blue-800">Menu</button>
+      </div>
+
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden lg:hidden px-4 pb-4"></div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="content"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-r from-blue-900 to-cyan-800 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg mb-3">Dhukwan SHEP</h3>
+          <p class="text-blue-100 text-sm">
+            A Tehri Hydro Development Corporation initiative for sustainable hydroelectric power generation.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg mb-3">Quick Links</h3>
+          <ul class="space-y-2 text-sm text-blue-100">
+            <li><button data-nav="home" class="hover:text-white transition-colors">Home</button></li>
+            <li><button data-nav="about" class="hover:text-white transition-colors">About Us</button></li>
+            <li><button data-nav="contact" class="hover:text-white transition-colors">Contact</button></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg mb-3">Stay Connected</h3>
+          <p class="text-blue-100 text-sm">
+            Follow our progress and stay updated with the latest developments.
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-blue-700 mt-8 pt-6 text-center text-sm text-blue-100">
+        <p>© 2024 THDC India Limited. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /****************************************************************
+     * Data initial state based on App.tsx (converted)
+     * Source: uploaded App.tsx. See file citation in response.
+     ****************************************************************/
+    const state = {
+      activeSection: 'home',
+      mobileMenuOpen: false,
+      galleryItems: [
+        {
+          id: '1',
+          title: 'Project Site Overview',
+          description: 'Aerial view of Dhukwan SHEP construction site',
+          imageUrl: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800',
+          date: '2024-01-15'
+        },
+        {
+          id: '2',
+          title: 'Powerhouse Construction',
+          description: 'Underground powerhouse excavation work in progress',
+          imageUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800',
+          date: '2024-02-20'
+        }
+      ],
+      presentations: [
+        {
+          id: '1',
+          title: 'Project Progress Report Q1 2024',
+          author: 'Engineering Team',
+          fileName: 'progress_report_q1.pdf',
+          uploadDate: '2024-03-01'
+        }
+      ],
+      meetings: [
+        {
+          id: '1',
+          title: 'Monthly Review Meeting',
+          date: '2024-04-15',
+          time: '10:00 AM',
+          description: 'Review of project milestones and upcoming activities'
+        }
+      ],
+      feedbacks: []
+    };
+
+    const navItems = [
+      { id: 'home', label: 'Home' },
+      { id: 'about', label: 'About Us' },
+      { id: 'gallery', label: 'Gallery' },
+      { id: 'presentations', label: 'Presentations' },
+      { id: 'meetings', label: 'Meetings & Feedback' },
+      { id: 'contact', label: 'Contact' }
+    ];
+
+    /****************************************************************
+     * Utilities & renderers
+     ****************************************************************/
+    function el(tag, attrs = {}, ...children) {
+      const e = document.createElement(tag);
+      for (const k in attrs) {
+        if (k === 'class') e.className = attrs[k];
+        else if (k.startsWith('data-')) e.setAttribute(k, attrs[k]);
+        else if (k === 'html') e.innerHTML = attrs[k];
+        else e[k] = attrs[k];
+      }
+      children.forEach(c => {
+        if (c == null) return;
+        if (typeof c === 'string') e.appendChild(document.createTextNode(c));
+        else e.appendChild(c);
+      });
+      return e;
+    }
+
+    function setActive(section) {
+      state.activeSection = section;
+      render();
+      // close mobile menu on navigation
+      state.mobileMenuOpen = false;
+      updateMobileMenu();
+    }
+
+    function formatDate(dateStr) {
+      // Keep yyyy-mm-dd as-is if provided, else format ISO
+      if (!dateStr) return '';
+      return dateStr;
+    }
+
+    /****************************************************************
+     * DOM rendering functions for each section
+     ****************************************************************/
+    function renderHeaderNav() {
+      const nav = document.getElementById('main-nav');
+      nav.innerHTML = '';
+      navItems.forEach(item => {
+        const btn = el('button', {
+          class: `flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${state.activeSection === item.id ? 'bg-white text-blue-900' : 'text-white hover:bg-blue-800'}`,
+          onclick: () => setActive(item.id)
+        }, item.label);
+        nav.appendChild(btn);
+      });
+
+      // mobile menu button
+      const mobileToggle = document.getElementById('mobile-toggle');
+      mobileToggle.onclick = () => {
+        state.mobileMenuOpen = !state.mobileMenuOpen;
+        updateMobileMenu();
+      };
+      updateMobileMenu();
+    }
+
+    function updateMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.innerHTML = '';
+      if (!state.mobileMenuOpen) {
+        mobileMenu.classList.add('hidden');
+        return;
+      }
+      mobileMenu.classList.remove('hidden');
+      navItems.forEach(item => {
+        const btn = el('button', {
+          class: `w-full text-left flex items-center gap-2 px-4 py-2 rounded-lg transition-all mb-1 ${state.activeSection === item.id ? 'bg-white text-blue-900' : 'text-white hover:bg-blue-800'}`,
+          onclick: () => setActive(item.id)
+        }, item.label);
+        mobileMenu.appendChild(btn);
+      });
+    }
+
+    function renderHome() {
+      return el('div', { class: 'space-y-8' },
+        el('div', { class: 'relative h-96 rounded-2xl overflow-hidden shadow-2xl' },
+          el('img', { src: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200', alt: 'Hydroelectric Dam', class: 'w-full h-full object-cover' }),
+          el('div', { class: 'absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end' },
+            el('div', { class: 'p-8 text-white' },
+              el('h2', { class: 'text-4xl sm:text-5xl mb-4' }, 'Welcome to Dhukwan SHEP'),
+              el('p', { class: 'text-xl max-w-2xl' }, 'Small Hydro Electric Project - Harnessing the power of water for sustainable energy')
+            )
+          )
+        ),
+        el('div', { class: 'grid md:grid-cols-3 gap-6' },
+          card('Project Overview', 'Dhukwan SHEP is a state-of-the-art small hydroelectric project designed to generate clean, renewable energy.', 'Info'),
+          card('Latest Updates', 'Stay informed with the latest project developments, presentations, and meeting minutes.', 'FileText'),
+          card('Community Engagement', 'We value your feedback and participation in the development of this important infrastructure project.', 'Users')
+        )
+      );
+    }
+
+    function card(title, body) {
+      return el('div', { class: 'card p-0 border-blue-200 hover:shadow-lg transition-shadow' },
+        el('div', { class: 'card-header' },
+          el('div', { class: 'w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-2' },
+            '' // placeholder for icon
+          ),
+          el('h3', { class: 'text-lg font-semibold' }, title)
+        ),
+        el('div', { class: 'card-content text-gray-600' },
+          el('p', {}, body)
+        )
+      );
+    }
+
+    function renderAbout() {
+      return el('div', { class: 'space-y-8' },
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'About Dhukwan SHEP'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Small Hydro Electric Project Initiative')
+          ),
+          el('div', { class: 'card-content space-y-6' },
+
+            el('div', {},
+          el('h3', { class: 'text-xl mb-3 text-blue-900' }, 'Project Summary'),
+          el('p', { class: 'text-gray-700 leading-relaxed' },
+            'The Government of Uttar Pradesh entrusted THDC India Ltd. (THDCIL) with implementing the 24 MW Dhukwan Small Hydro Project. ',
+            'The project is located near Sukhwan–Dhukwan village in Babina Tehsil, Jhansi district, on the Betwa River. ',
+            'The implementation agreement between GOUP and THDCIL was signed on 2 September 2009.'
+          ),
+          el('p', { class: 'text-gray-700 leading-relaxed mt-3' },
+            'The site is 37 km from Jhansi on the Jhansi–Lalitpur road, falling under Survey of India toposheet 54 K/12/NW. ',
+            'It is well accessible via all-weather metalled roads. ',
+            'Geographical coordinates are latitude 25°12′ E and longitude 78°33′ N.'
+          ),
+          el('p', { class: 'text-gray-700 leading-relaxed mt-3' },
+            'The project utilizes the existing Dhukwan masonry-cum-earthen dam, which is 2972 m long and has a gross reservoir capacity of 5780 MCum with top FSL at 273.7 m.'
+          ),
+          el('p', { class: 'text-gray-700 leading-relaxed mt-3' },
+            'Major project components include: 1433 m head race channel, 4 RCC intake barrels, a forebay, three 4.0 m diameter penstocks, a surface powerhouse with 3 × 8 MW vertical Kaplan turbines, and a 961 m tailrace channel. ',
+            'The expected annual energy generation is 97.82 MU at a 46.53% load factor.'
+          ),
+          el('p', { class: 'text-gray-700 leading-relaxed mt-3' },
+            'No R&R works were required. Forest land of 39 hectares was notified in June 2014. ',
+            'THDCIL Board approved the Revised Cost Estimate (RCE) of Rs. 294.60 Cr including IDC of Rs. 19.04 Cr at July 2016 price level.'
+          ),
+          el('p', { class: 'text-gray-700 leading-relaxed mt-3' },
+            'Commissioning details: Unit-1 (29.09.2019), Unit-2 (02.12.2019), Unit-3 (19.12.2019). Although commissioned in December 2019, commercial operation approval was delayed. ',
+            'UPSLDC and UPPCL granted permission for power injection on 05.05.2020. ',
+            'PPA with UPPCL was approved by UPERC on 13.05.2020, and capacity addition of 24 MW was accepted effective 13.01.2020.'
+          )
+        ),
+
+            el('div', {},
+              el('h3', { class: 'text-xl mb-3 text-blue-900' }, 'Project Objectives'),
+              el('ul', { class: 'list-disc list-inside space-y-2 text-gray-700' },
+                el('li', {}, 'Generate clean, renewable hydroelectric power for the region'),
+                el('li', {}, "Contribute to India's renewable energy targets and reduce carbon emissions"),
+                el('li', {}, 'Promote sustainable development in the local community'),
+                el('li', {}, 'Create employment opportunities during construction and operation phases'),
+                el('li', {}, 'Implement best practices in environmental management and conservation')
+              )
+            ),
+            el('div', {},
+              el('h3', { class: 'text-xl mb-3 text-blue-900' }, 'Key Features'),
+              el('div', { class: 'grid sm:grid-cols-2 gap-4' },
+                feature('Capacity:', '24 MW'),
+                feature('Turbine:', 'Kaplan Turbine'),
+                feature('Location:', 'Jhansi, Uttar Pradesh'),
+                feature('Developer:', 'THDC India Ltd.')
+              )
+            ),
+            el('div', {},
+              el('h3', { class: 'text-xl mb-3 text-blue-900' }, 'Environmental Commitment'),
+              el('p', { class: 'text-gray-700 leading-relaxed' }, 'We are dedicated to minimizing environmental impact through careful planning, sustainable construction practices, and comprehensive environmental monitoring programs. The project adheres to all environmental regulations and incorporates measures for wildlife protection, afforestation, and water quality management.')
+            )
+          )
+        )
+      );
+    }
+
+    function feature(k, v) {
+      return el('div', { class: 'bg-blue-50 p-4 rounded-lg' },
+        el('p', { class: 'text-gray-700' }, el('strong', {}, k), ' ', v)
+      );
+    }
+
+    function renderGallery() {
+      // create form and gallery
+      const form = el('form', { class: 'space-y-4 mb-8 p-4 bg-blue-50 rounded-lg', onsubmit: (e) => { e.preventDefault(); handleAddGallery(e); } },
+        el('h3', { class: 'text-lg text-blue-900' }, 'Add New Gallery Item'),
+        el('div', { class: 'grid sm:grid-cols-2 gap-4' },
+          el('div', {},
+            el('label', { for: 'gallery-title', class: 'block text-sm font-medium text-gray-700' }, 'Title'),
+            el('input', { id: 'gallery-title', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter image title' })
+          ),
+          el('div', {},
+            el('label', { for: 'gallery-image', class: 'block text-sm font-medium text-gray-700' }, 'Image URL'),
+            el('input', { id: 'gallery-image', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'https://example.com/image.jpg' })
+          )
+        ),
+        el('div', {},
+          el('label', { for: 'gallery-desc', class: 'block text-sm font-medium text-gray-700' }, 'Description'),
+          el('textarea', { id: 'gallery-desc', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter image description' })
+        ),
+        el('button', { class: 'px-4 py-2 rounded bg-blue-600 text-white' }, 'Add to Gallery')
+      );
+
+      const galleryGrid = el('div', { class: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-6', id: 'gallery-grid' });
+      state.galleryItems.forEach(item => {
+        galleryGrid.appendChild(renderGalleryCard(item));
+      });
+
+      return el('div', { class: 'space-y-8' },
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'Project Gallery'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Visual documentation of project progress and catalogues')
+          ),
+          el('div', { class: 'card-content' }, form, galleryGrid)
+        )
+      );
+    }
+
+    function renderGalleryCard(item) {
+      const cardEl = el('div', { class: 'card overflow-hidden hover:shadow-lg transition-shadow' },
+        el('img', { src: item.imageUrl, alt: item.title, class: 'w-full h-48 object-cover' }),
+        el('div', { class: 'card-header' },
+          el('h3', { class: 'text-lg' }, item.title),
+          el('p', { class: 'text-sm text-gray-500' }, item.date)
+        ),
+        el('div', { class: 'card-content' },
+          el('p', { class: 'text-gray-700' }, item.description)
+        )
+      );
+      return cardEl;
+    }
+
+    function handleAddGallery(e) {
+      const title = document.getElementById('gallery-title').value.trim();
+      const imageUrl = document.getElementById('gallery-image').value.trim();
+      const desc = document.getElementById('gallery-desc').value.trim();
+      if (!title || !imageUrl || !desc) return;
+      const newItem = {
+        id: Date.now().toString(),
+        title,
+        description: desc,
+        imageUrl,
+        date: new Date().toISOString().split('T')[0]
+      };
+      state.galleryItems.push(newItem);
+      // re-render gallery grid only
+      const galleryGrid = document.getElementById('gallery-grid');
+      if (galleryGrid) {
+        galleryGrid.appendChild(renderGalleryCard(newItem));
+      }
+      // reset form
+      e.target.reset();
+    }
+
+    function renderPresentations() {
+      const form = el('form', { class: 'space-y-4 mb-8 p-4 bg-blue-50 rounded-lg', onsubmit: (e) => { e.preventDefault(); handleUploadPresentation(e); } },
+        el('h3', { class: 'text-lg text-blue-900' }, 'Upload New Presentation'),
+        el('div', { class: 'grid sm:grid-cols-2 gap-4' },
+          el('div', {},
+            el('label', { for: 'pres-title', class: 'block text-sm font-medium text-gray-700' }, 'Presentation Title'),
+            el('input', { id: 'pres-title', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter presentation title' })
+          ),
+          el('div', {},
+            el('label', { for: 'pres-author', class: 'block text-sm font-medium text-gray-700' }, 'Author/Department'),
+            el('input', { id: 'pres-author', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter author name' })
+          )
+        ),
+        el('div', {},
+          el('label', { for: 'pres-file', class: 'block text-sm font-medium text-gray-700' }, 'Select File'),
+          el('input', { id: 'pres-file', type: 'file', accept: '.pdf,.ppt,.pptx,.doc,.docx', class: 'mt-1 block w-full' })
+        ),
+        el('button', { class: 'px-4 py-2 rounded bg-blue-600 text-white' }, 'Upload Presentation')
+      );
+
+      const list = el('div', { class: 'space-y-4' });
+      state.presentations.forEach(p => {
+        list.appendChild(renderPresentationCard(p));
+      });
+
+      return el('div', { class: 'space-y-8' },
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'Presentations & Documents'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Upload and access project presentations and reports')
+          ),
+          el('div', { class: 'card-content' }, form, list)
+        )
+      );
+    }
+
+    function renderPresentationCard(p) {
+      return el('div', { class: 'card hover:shadow-md transition-shadow' },
+        el('div', { class: 'card-content flex items-center justify-between p-6' },
+          el('div', { class: 'flex items-start gap-4' },
+            el('div', { class: 'w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0' }, '📄'),
+            el('div', {},
+              el('h3', { class: 'text-lg text-gray-900' }, p.title),
+              el('p', { class: 'text-sm text-gray-600' }, 'By ' + p.author),
+              el('p', { class: 'text-sm text-gray-500 mt-1' }, p.fileName + ' • Uploaded on ' + p.uploadDate)
+            )
+          ),
+          el('button', { class: 'px-3 py-1 border rounded' }, 'Download')
+        )
+      );
+    }
+
+    function handleUploadPresentation(e) {
+      const title = document.getElementById('pres-title').value.trim();
+      const author = document.getElementById('pres-author').value.trim();
+      const fileInput = document.getElementById('pres-file');
+      const file = fileInput.files && fileInput.files[0];
+      if (!title || !author || !file) return;
+      const newP = {
+        id: Date.now().toString(),
+        title,
+        author,
+        fileName: file.name,
+        uploadDate: new Date().toISOString().split('T')[0]
+      };
+      state.presentations.push(newP);
+      // append to list
+      const listContainer = document.querySelector('.card .card-content .space-y-4') || null;
+      // find the presentations list by searching for the presentation list container:
+      // simpler: re-render entire content
+      render();
+    }
+
+    function renderMeetingsAndFeedback() {
+      // Meetings form
+      const meetingForm = el('form', { class: 'space-y-4 mb-8 p-4 bg-blue-50 rounded-lg', onsubmit: (e) => { e.preventDefault(); handleAddMeeting(e); } },
+        el('h3', { class: 'text-lg text-blue-900' }, 'Schedule New Meeting'),
+        el('div', { class: 'grid sm:grid-cols-2 gap-4' },
+          el('div', {},
+            el('label', { for: 'meeting-title', class: 'block text-sm font-medium text-gray-700' }, 'Meeting Title'),
+            el('input', { id: 'meeting-title', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter meeting title' })
+          ),
+          el('div', {},
+            el('label', { for: 'meeting-date', class: 'block text-sm font-medium text-gray-700' }, 'Date'),
+            el('input', { id: 'meeting-date', type: 'date', required: true, class: 'mt-1 block w-full rounded-md border-gray-300' })
+          ),
+          el('div', {},
+            el('label', { for: 'meeting-time', class: 'block text-sm font-medium text-gray-700' }, 'Time'),
+            el('input', { id: 'meeting-time', type: 'time', required: true, class: 'mt-1 block w-full rounded-md border-gray-300' })
+          )
+        ),
+        el('div', {},
+          el('label', { for: 'meeting-desc', class: 'block text-sm font-medium text-gray-700' }, 'Description (Optional)'),
+          el('textarea', { id: 'meeting-desc', class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter meeting agenda or description' })
+        ),
+        el('button', { class: 'px-4 py-2 rounded bg-blue-600 text-white' }, 'Schedule Meeting')
+      );
+
+      // Meetings list
+      const meetingsList = el('div', { class: 'space-y-4' }, ...state.meetings.map(m => renderMeetingCard(m)));
+
+      // Feedback form
+      const feedbackForm = el('form', { class: 'space-y-4 mb-8 p-4 bg-green-50 rounded-lg', onsubmit: (e) => { e.preventDefault(); handleSubmitFeedback(e); } },
+        el('h3', { class: 'text-lg text-green-900' }, 'Submit Feedback'),
+        el('div', {},
+          el('label', { for: 'feedback-name', class: 'block text-sm font-medium text-gray-700' }, 'Your Name'),
+          el('input', { id: 'feedback-name', required: true, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Enter your name' })
+        ),
+        el('div', {},
+          el('label', { for: 'feedback-message', class: 'block text-sm font-medium text-gray-700' }, 'Your Feedback'),
+          el('textarea', { id: 'feedback-message', required: true, rows: 4, class: 'mt-1 block w-full rounded-md border-gray-300', placeholder: 'Share your feedback, suggestions, or concerns' })
+        ),
+        el('button', { class: 'px-4 py-2 rounded bg-green-600 text-white' }, 'Submit Feedback')
+      );
+
+      const feedbackList = el('div', { class: 'space-y-4' });
+      if (state.feedbacks.length === 0) {
+        feedbackList.appendChild(el('p', { class: 'text-gray-500 text-center py-8' }, 'No feedback submitted yet'));
+      } else {
+        state.feedbacks.forEach(f => {
+          feedbackList.appendChild(renderFeedbackCard(f));
+        });
+      }
+
+      return el('div', { class: 'space-y-8' },
+
+        // Meetings card
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'Meetings Schedule'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Upcoming and past project meetings')
+          ),
+          el('div', { class: 'card-content' }, meetingForm, meetingsList)
+        ),
+
+        // Feedback card
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'Feedback & Suggestions'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Share your thoughts and feedback about the project')
+          ),
+          el('div', { class: 'card-content' }, feedbackForm, feedbackList)
+        )
+      );
+    }
+
+    function renderMeetingCard(m) {
+      return el('div', { class: 'card hover:shadow-md transition-shadow' },
+        el('div', { class: 'card-content flex items-start gap-4 p-6' },
+          el('div', { class: 'w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0' }, '📅'),
+          el('div', { class: 'flex-1' },
+            el('h3', { class: 'text-lg text-gray-900' }, m.title),
+            el('p', { class: 'text-sm text-gray-600' }, `${m.date} at ${m.time}`),
+            m.description ? el('p', { class: 'text-sm text-gray-700 mt-2' }, m.description) : null
+          )
+        )
+      );
+    }
+
+    function handleAddMeeting(e) {
+      const title = document.getElementById('meeting-title').value.trim();
+      const date = document.getElementById('meeting-date').value;
+      const time = document.getElementById('meeting-time').value;
+      const desc = document.getElementById('meeting-desc').value.trim();
+      if (!title || !date || !time) return;
+      const newM = {
+        id: Date.now().toString(),
+        title,
+        date,
+        time,
+        description: desc
+      };
+      state.meetings.push(newM);
+      render();
+    }
+
+    function renderFeedbackCard(f) {
+      return el('div', { class: 'card bg-gray-50' },
+        el('div', { class: 'card-content p-6' },
+          el('div', { class: 'flex items-start justify-between mb-2' },
+            el('h3', { class: 'text-gray-900' }, f.name),
+            el('span', { class: 'text-sm text-gray-500' }, f.date)
+          ),
+          el('p', { class: 'text-gray-700' }, f.message)
+        )
+      );
+    }
+
+    function handleSubmitFeedback(e) {
+      const name = document.getElementById('feedback-name').value.trim();
+      const msg = document.getElementById('feedback-message').value.trim();
+      if (!name || !msg) return;
+      const newF = {
+        id: Date.now().toString(),
+        name,
+        message: msg,
+        date: new Date().toISOString().split('T')[0]
+      };
+      state.feedbacks.push(newF);
+      render();
+    }
+
+    function renderContact() {
+      return el('div', { class: 'space-y-8' },
+        el('div', { class: 'card' },
+          el('div', { class: 'card-header' },
+            el('h2', { class: 'text-3xl' }, 'Contact Information'),
+            el('p', { class: 'text-sm text-gray-500' }, 'Get in touch with the Dhukwan SHEP team')
+          ),
+          el('div', { class: 'card-content space-y-6' },
+            el('div', { class: 'grid md:grid-cols-2 gap-6' },
+              el('div', { class: 'space-y-4' },
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Project Office'),
+                  el('p', { class: 'text-gray-700' }, 'Dhukwan SHEP\nTHDC,\nBabina, Jhansi, U.P, India')
+                ),
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Phone'),
+                  el('p', { class: 'text-gray-700' }, 'Office: +91-XXXX-XXXXXX\nHelpline: 1800-XXX-XXXX')
+                ),
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Email'),
+                  el('p', { class: 'text-gray-700' }, 'General: info@dhukwanshep.in\nSupport: support@dhukwanshep.in\nMedia: media@dhukwanshep.in')
+                )
+              ),
+              el('div', { class: 'space-y-4' },
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Office Hours'),
+                  el('p', { class: 'text-gray-700' }, 'Monday - Friday: 9:30 AM - 6:00 PM\nSunday: Closed')
+                ),
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Key Personnel'),
+                  el('div', { class: 'space-y-2 text-gray-700' },
+                    el('p', {}, el('strong', {}, 'Project Head:'), ' Sh. B.P. Rayal'),
+                    el('p', {}, el('strong', {}, 'Chief Engineer:'), ' Sh. Shashank Nigam'),
+                    el('p', {}, el('strong', {}, 'Site Incharge:'), ' Mr. Rajesh Kumar'),
+                    
+                  )
+                ),
+                el('div', { class: 'bg-blue-50 p-6 rounded-lg' },
+                  el('h3', { class: 'text-lg text-blue-900 mb-2' }, 'Parent Organization'),
+                  el('p', { class: 'text-gray-700' }, el('strong', {}, 'THDC India Limited'), el('br'), 'A Government of India Enterprise', el('br'), 'Website: www.thdc.co.in')
+                )
+              )
+            ),
+            el('div', { class: 'bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-lg border-2 border-blue-200' },
+              el('h3', { class: 'text-lg text-blue-900 mb-3' }, 'Emergency Contact'),
+              el('p', { class: 'text-gray-700' }, 'For urgent matters or emergencies related to the project, please contact:', el('br'), el('strong', { class: 'text-red-600' }, 'Emergency Hotline: +91-XXXX-XXXXXX (24/7)'))
+            )
+          )
+        )
+      );
+    }
+
+    /****************************************************************
+     * Master render function
+     ****************************************************************/
+    function render() {
+      renderHeaderNav();
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+      let node = null;
+      switch (state.activeSection) {
+        case 'home': node = renderHome(); break;
+        case 'about': node = renderAbout(); break;
+        case 'gallery': node = renderGallery(); break;
+        case 'presentations': node = renderPresentations(); break;
+        case 'meetings': node = renderMeetingsAndFeedback(); break;
+        case 'contact': node = renderContact(); break;
+        default: node = renderHome();
+      }
+      content.appendChild(node);
+    }
+
+    // initialize nav buttons in footer quick links and others
+    document.addEventListener('click', function(e){
+      const target = e.target;
+      if (target && target.dataset && target.dataset.nav) {
+        setActive(target.dataset.nav);
+      }
+      if (target && target.matches && target.matches('button[data-nav]')) {
+        setActive(target.getAttribute('data-nav'));
+      }
+    });
+
+    // initial render
+    render();
+
+    /****************************************************************
+     * Notes & attributions (from uploaded files)
+     * - The UI and text were derived from the uploaded App.tsx file.
+     * - Attributions provided in Attributions.md may apply.
+     * See file uploads for original React/TSX components. 
+     ****************************************************************/
+    console.log('Single-file app loaded. Source App.tsx and Attributions.md were used to build this page.');
+  </script>
+
+  <!-- Attributions (visible for convenience) -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-gray-500">
+    <strong>Note:</strong> This single-file version was created by converting the uploaded React TypeScript app into a self-contained HTML + JS page. Source files used: App.tsx and Attributions.md. :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
+  </div>
+</body>
+</html>
